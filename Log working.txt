@@ -1,0 +1,77 @@
+Python 3.8.10 (tags/v3.8.10:3d8993a, May  3 2021, 11:48:03) [MSC v.1928 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from News.models import *
+
+1. Создать двух пользователей (с помощью метода User.objects.create_user('username')).
+
+>>> u1 = User.objects.create(name="Кривоухов Павел Слизович")
+>>> u2 = User.objects.create(name="Баранов Сергей Петросович")
+
+2. Создать два объекта модели Author, связанные с пользователями.
+
+>>> a1 = Author.objects.create(name="Krivoukhov", users = u1)
+>>> a2 = Author.objects.create(name="Baranov", users = u2)
+
+3. Добавить 4 категории в модель Category.
+
+>>> c1 = Category.objects.create(name = "Спорт")
+>>> c2 = Category.objects.create(name = "Политика")
+>>> c3 = Category.objects.create(name = "Образование")
+>>> c4 = Category.objects.create(name = "Отдых")
+
+4. Добавить 2 статьи и 1 новость.
+
+>>> pa1 = Post.objects.create(author = a1, type_post = "PA", title = "Первая статья от a1", text_article = "Заниматься плаванием - это хорошо, далее подробно расскажу. Можно много говорить, но основное полезное влияние оказывает плавание на сердце, спину, руки, плечи. Короче, большинство мышц и дыхание")
+
+>>> pa2 = Post.objects.create(author = a1, type_post = "PA", title = "Вторая статья от a1", text_article = "Заниматься образованием - это хорошо, далее подробно расскажу. Есть множество замечательных курсов, на любой вкус, я решил попробовать SkillFactory. Сложно местами, но оно того стоит")
+
+>>> pn4 = Post.objects.create(author = a2, title = "Первая новость от a2 (отдых на рыбалке)", text_article = "Внимание! Внимание! Сегодня под мостом, поймали чудо с хвостом! Будьте осторожны ;-)")
+
+5. Присвоить им категории (как минимум в одной статье/новости должно быть не меньше 2 категорий).
+
+>>> pa1.categories.add(c1)
+>>> pa2.categories.add(c3)
+>>> pn4.categories.add(c4)
+>>> pn4.categories.add(c1)
+
+6. Создать как минимум 4 комментария к разным объектам модели Post (в каждом объекте должен быть как минимум один комментарий).
+
+>>> com1_pa1 = Comment.objects.create(posts = pa1, users = u2, text_comment = "Не возможно не согласиться, плавание - супер!")
+>>> com2_pa2 = Comment.objects.create(posts = pa2, users = u2, text_comment = "Однажды тоже посетил курсы и здорово прокачался.")
+>>> com3_pa1 = Comment.objects.create(posts = pa1, users = u1, text_comment = "Рад, что есть единомышленники")
+>>> com4_pn4 = Comment.objects.create(posts = pn4, users = u1, text_comment = "Забавная первоапрельская шуточка ;-)")
+
+7. Применяя функции like() и dislike() к статьям/новостям и комментариям, скорректировать рейтинги этих объектов.
+
+>>> pa1.like=23
+>>> pa2.like=100
+>>> pn4.like=12
+
+>>> com1_pa1.like=59
+>>> com2_pa2.like=176
+>>> com3_pa1.like=16
+>>> com4_pn4.like=116
+
+8. Обновить рейтинги пользователей.
+
+>>> a1.update_rating()
+>>> a2.update_rating()
+
+9. Вывести username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
+
+>>> Author.objects.order_by('-_rating').values('name', '_rating').first()
+
+10. Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
+
+>>> p1 = Post.objects.order_by('-_rating').first()
+>>> p1.author.name
+>>> p1.datetime_created
+>>> p1._rating
+>>> p1.title
+>>> p1.preview()
+
+11. Вывести все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
+
+>>> Comment.objects.filter(posts=p1).values('datetime_comment', 'users', '_rating', 'text_comment')
+
