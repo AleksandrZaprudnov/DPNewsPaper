@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User as UserDjango
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 post_news = 'PN'
@@ -10,13 +13,48 @@ TYPE_POST = [
 ]
 
 
+# Модель MailingLists
+# Модель, содержащая категории для рассылки пользователям
+# Имеет поля:
+# - пользователь
+# - категория, на которую подписан пользователь
+
+class MailingLists(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user.name.title()} подписан на "{self.category.name.title()}"'
+
+
 # Модель User
 # Модель, содержащая всех пользователей
-# Имеет одно поле
+# Имеет поля:
+# name - имя пользователя
+# user_django - связь один к одному с пользователем Django,
+#   для создания пользователей при регистрации
 # - имя пользователя.
+# Чтобы получить доступ к связанным данным,
+# лучше предварительно выбрать их в одном запросе к базе данных
+# users = User.objects.all().select_related('profile')
 
 class User(models.Model):
     name = models.CharField(max_length=255, null=False)
+    user_django = models.OneToOneField(UserDjango, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.name.title()}'
+
+    @receiver(post_save, sender=UserDjango)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            user = User.objects.create(user_django=instance)
+            user.name = instance.username
+            user.save()
+
+    @receiver(post_save, sender=UserDjango)
+    def save_user_profile(sender, instance, **kwargs):
+        pass
 
 
 # Модель Author
@@ -51,6 +89,10 @@ class Author(models.Model):
         self._rating = sum_
         self.save()
 
+    def __str__(self):
+        return f'{self.name.title()}'
+
+
 # Модель Category
 # Категории новостей / статей — темы,
 # которые они отражают(спорт, политика, образование и т.д.).
@@ -59,6 +101,9 @@ class Author(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False)
+
+    def __str__(self):
+        return f'{self.name.title()}'
 
 
 # Модель Post
@@ -106,6 +151,10 @@ class Post(models.Model):
 
     def preview(self):
         return self.text_article[:124] + " ..."
+
+    # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу новости
+    def get_absolute_url(self):
+        return f'/news/{self.id}'
 
 
 # Модель PostCategory

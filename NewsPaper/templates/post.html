@@ -1,0 +1,19 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+
+{% block title %}
+Post
+{% endblock title %}
+
+{% block content %}
+<hr>
+{{ post.title|censor:'...' }}
+<hr>
+{{ post.datetime_created|date:'d.m.y' }}
+<hr>
+{{ post.text_article|censor:'...' }}
+<hr>
+<a href="{% url 'home' %}">| Общий список |</a>
+<hr>
+{% endblock content %}

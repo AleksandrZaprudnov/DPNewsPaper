@@ -1,0 +1,72 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+
+{% block title %}
+Posts search
+{% endblock title %}
+
+{% block content %}
+    <h1>Поиск новостей и статей</h1>
+    <hr>
+    <form method="get">
+        {{ filter.form }}
+        <input type="submit" value="Найти">
+    </form>
+    <hr>
+    <h3>Найдено: {{ filter.qs|length }}</h3>
+    {% if filter.qs %}
+        <hr>
+        <table>
+            <thead>
+                <th>
+                    <h3>Тема (заголовок)</h3>
+                </th>
+                <th>
+                    <h3>Дата публикации</h3>
+                </th>
+                <th>
+                    <h3>Текст</h3>
+                </th>
+            </thead>
+            {% for post in person_page_object %}
+            <tr>
+                <td>
+                    {{ post.title|censor:'...' }}
+                </td>
+                <td>
+                    {{ post.datetime_created|date:'d-m-y H:m' }}
+                </td>
+                <td>
+                    {{ post.text_article|truncatechars:50|censor:'...' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <hr>
+        <a href="{% url 'post_create' %}">| Опубликовать новый пост </a>
+        <a href="{% url 'home' %}">| Общий список |</a>
+        <hr>
+        {% if is_paginated %}
+            {% if person_page_object.has_previous %}
+                <a href="{% url_qs_filter 1 'page' request.GET.urlencode %}">First</a>
+                <a href="{% url_qs_filter person_page_object.previuos_page_number 'page' request.GET.urlencode %}"><<<</a>
+            {% endif %}
+
+            {% for num in person_page_object.paginator.page_range %}
+                {% if person_page_object.number == num %}
+                    <a>{{ num }}</a>
+                {% elif num > person_page_object.number|add:'-3' and num < person_page_object.number|add:'3' %}
+                    <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if person_page_object.has_next %}
+                <a href="{% url_qs_filter person_page_object.next_page_number 'page' request.GET.urlencode %}">>>></a>
+                <a href="{% url_qs_filter person_page_object.paginator.num_pages 'page' request.GET.urlencode %}">Last</a>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        <h3>Нет данных по вашему запросу</h3>
+    {% endif %}
+{% endblock content %}
