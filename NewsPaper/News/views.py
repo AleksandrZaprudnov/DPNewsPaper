@@ -8,6 +8,7 @@ from datetime import datetime
 from .models import Post, User, Category, MailingLists
 from .filters import NewsFilter, NewsFilterByCategory
 from .forms import NewsModelForm
+from .tasks import news_week
 
 
 class PostsListView(ListView):

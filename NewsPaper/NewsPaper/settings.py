@@ -188,3 +188,8 @@ APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 # Отмена при невыполнении (секунды)
 APSCHEDULER_RUN_NOW_TIMEOUT = 25
 
+CELERY_BROKER_URL = 'redis://' + get_env('HOST') + ':' + get_env('PORT')
+CELERY_RESULT_BACKEND = 'redis://' + get_env('HOST') + ':' + get_env('PORT')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'

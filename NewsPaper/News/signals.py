@@ -1,9 +1,9 @@
 from django.db.models.signals import m2m_changed
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.dispatch import receiver
 from django.contrib.auth.models import User as UserDjango
 from .models import User, Post, MailingLists
+from .tasks import send_mail
 
 
 # sender - класс промежуточный (PostCategory)
@@ -13,7 +13,6 @@ from .models import User, Post, MailingLists
 def notify_users_posts_categories(sender, instance, action, model, pk_set, **kwargs):
 
     if action == 'post_add':
-
         list_id = []
         for el in pk_set:
             list_id.append(el)
@@ -54,11 +53,5 @@ def notify_users_posts_categories(sender, instance, action, model, pk_set, **kwa
                 }
             )
 
-            msg = EmailMultiAlternatives(
-                subject=f'Новостной портал News paper: новая публикация',
-                from_email='a....@....ru',
-                to=[user.email],
-            )
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            send_mail(user.email, html_content)
 
