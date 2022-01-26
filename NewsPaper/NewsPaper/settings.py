@@ -20,7 +20,6 @@ from .functions import get_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -33,6 +32,131 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 SITE_ID = 1
+
+# LOGGING_CONFIG = None
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # Включение/отключение настроек логирования Django
+    'style': '{',
+    'formatters': {
+        'f_debug': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
+        },
+        'f_warning': {
+            'format': '%(asctime)s %(levelname)s %(message)s %(pathname)s'
+        },
+        'f_error': {
+            'format': '%(asctime)s %(levelname)s %(message)s %(pathname)s %(exc_info)s'
+        },
+        'f_error_noexc': {
+            'format': '%(asctime)s %(levelname)s %(message)s %(pathname)s'
+        },
+        'ff_general_info': {
+            'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'console_debug': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'f_debug',
+        },
+        'console_warning': {
+            'level': 'WARNING',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'f_warning',
+        },
+        'console_error': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'f_error',
+        },
+        # В файл general.log должны выводиться сообщения уровня INFO
+        # и выше только с указанием времени, уровня логирования, модуля,
+        # в котором возникло сообщение (аргумент module) и само сообщение.
+        # Сюда также попадают сообщения с регистратора django.
+        'gen_file_info': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.FileHandler',
+            'formatter': 'ff_general_info',
+            'filename': os.path.join(BASE_DIR, 'logs/general.log'),
+        },
+        # В файл errors.log должны выводиться сообщения только уровня ERROR и CRITICAL.
+        # В сообщении указывается время, уровень логирования, само сообщение,
+        # путь к источнику сообщения и стэк ошибки. В этот файл должны попадать сообщения
+        # только из логгеров django.request, django.server, django.template, django.db_backends.
+        'err_file_info': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.FileHandler',
+            'formatter': 'f_error',
+            'filename': os.path.join(BASE_DIR, 'logs/errors.log'),
+        },
+        # В файл security.log должны попадать только сообщения,
+        # связанные с безопасностью, а значит только из логгера django.security.
+        # Формат вывода предполагает время, уровень логирования, модуль и сообщение.
+        'sec_file_info': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.FileHandler',
+            'formatter': 'ff_general_info',
+            'filename': os.path.join(BASE_DIR, 'logs/security.log'),
+        },
+        # На почту должны отправляться сообщения уровней ERROR и выше
+        # из django.request и django.server по формату, как в errors.log,
+        # но без стэка ошибок.
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'f_error_noexc',
+        },
+    },
+    'loggers': {
+        'News.views': {
+            'handlers': ['console_debug', 'console_warning', 'console_error'],
+            'level': 'DEBUG',
+            'propagate': False,  # Включение/отключение обработки логерами более высокого уровня
+        },
+        'django': {
+            'handlers': ['console_debug', 'console_warning', 'console_error', 'gen_file_info'],
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['err_file_info', 'mail_admins'],
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['err_file_info', 'mail_admins'],
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['err_file_info'],
+            'propagate': False,
+        },
+        'django.db_backends': {
+            'handlers': ['err_file_info'],
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['sec_file_info'],
+            'propagate': False,
+        },
+    },
+}
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`

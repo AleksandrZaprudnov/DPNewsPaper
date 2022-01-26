@@ -4,7 +4,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.models import User as UserDjango
 from django.template.loader import render_to_string
 from .models import Post, PostCategory, Category, MailingLists, User
+from NewsPaper import functions
 
+
+print(functions.get_env('EMAIL_HOST'))
 
 # celery -A app_my worker -l INFO -B
 # Флаг B - периодические задачи

@@ -8,7 +8,13 @@ from datetime import datetime
 from .models import Post, User, Category, MailingLists
 from .filters import NewsFilter, NewsFilterByCategory
 from .forms import NewsModelForm
+from os import path
+import logging
+from NewsPaper import settings
 from .tasks import news_week
+
+
+logger_posts = logging.getLogger(__name__)
 
 
 class PostsListView(ListView):
@@ -18,11 +24,17 @@ class PostsListView(ListView):
     queryset = Post.objects.order_by('-datetime_created')
     paginate_by = 10
 
+    if not path.isfile(path.join(settings.BASE_DIR, 'templates/posts.html')):
+        logger_posts.error(f'Файл {template_name} отсутствует!')
+
 
 class PostDetailView(DetailView):
     model = Post
     template_name = 'post.html'
     context_object_name = 'post'
+
+    if not path.isfile(path.join(settings.BASE_DIR, 'templates/post1.html')):
+        logger_posts.error(f'Файл {template_name} отсутствует!')
 
 
 class PostsSearchList(ListView):
@@ -41,6 +53,9 @@ class PostsSearchList(ListView):
         page_number = self.request.GET.get('page')
         person_page_object = paginated_filtered_persons.get_page(page_number)
         context['person_page_object'] = person_page_object
+
+        # logger_posts.debug(f'{context}')
+        logger_posts.error('TEST ERROR')
 
         return context
 
